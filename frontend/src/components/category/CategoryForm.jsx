@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Input } from '../common/Input';
-import { Button } from '../common/Button';
 
 export const CategoryForm = ({ initialData, onSubmit, onCancel, loading }) => {
   const [name, setName] = useState('');
@@ -22,41 +20,52 @@ export const CategoryForm = ({ initialData, onSubmit, onCancel, loading }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Input
-        label="Category Name"
-        name="name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="e.g. Subscriptions"
-        required
-      />
-      <Input
-        label="Description"
-        name="description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Optional details"
-      />
+      <div className="form-group">
+        <label className="form-label">Category Name *</label>
+        <input
+          type="text"
+          className="input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Subscriptions"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Description</label>
+        <input
+          type="text"
+          className="input"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Optional category description"
+        />
+      </div>
+
       {initialData && (
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+        <div className="form-group">
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={isActive}
               onChange={(e) => setIsActive(e.target.checked)}
             />
-            <span style={{ color: 'var(--color-text-main)', fontSize: '0.9rem' }}>Active</span>
+            <span style={{ color: 'var(--color-ink)', fontSize: 'var(--font-size-body)' }}>Active Status</span>
           </label>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-        <Button variant="secondary" onClick={onCancel} type="button">
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
+        <button type="button" className="btn btn--secondary" onClick={onCancel}>
           Cancel
-        </Button>
-        <Button variant="primary" type="submit" disabled={loading}>
+        </button>
+        <button type="submit" className="btn btn--primary" disabled={loading || !name.trim()}>
           {loading ? 'Saving...' : initialData ? 'Update Category' : 'Create Category'}
-        </Button>
+        </button>
       </div>
     </form>
   );
 };
+
+export default CategoryForm;

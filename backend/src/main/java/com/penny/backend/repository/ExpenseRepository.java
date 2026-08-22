@@ -20,9 +20,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     List<Expense> findByExpenseDateBetween(LocalDate startDate, LocalDate endDate);
 
     @Query("SELECT e FROM Expense e WHERE " +
-           "(:categoryId IS NULL OR e.category.id = :categoryId) AND " +
-           "(:startDate IS NULL OR e.expenseDate >= :startDate) AND " +
-           "(:endDate IS NULL OR e.expenseDate <= :endDate) " +
+           "(CAST(:categoryId AS java.lang.Long) IS NULL OR e.category.id = :categoryId) AND " +
+           "(CAST(:startDate AS java.time.LocalDate) IS NULL OR e.expenseDate >= :startDate) AND " +
+           "(CAST(:endDate AS java.time.LocalDate) IS NULL OR e.expenseDate <= :endDate) " +
            "ORDER BY e.expenseDate DESC, e.createdAt DESC")
     List<Expense> filterExpenses(
             @Param("categoryId") Long categoryId,

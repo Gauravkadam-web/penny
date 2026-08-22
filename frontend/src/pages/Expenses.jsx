@@ -3,9 +3,11 @@ import { useExpenses } from '../hooks/useExpenses';
 import { ExpenseList } from '../components/expense/ExpenseList';
 import { ExpenseFilter } from '../components/expense/ExpenseFilter';
 import { ExpenseForm } from '../components/expense/ExpenseForm';
-import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import Loader from '../components/common/Loader';
+import ErrorMessage from '../components/common/ErrorMessage';
 import { expenseService } from '../services/expenseService';
+import { useApp } from '../context/AppContext';
 import { Plus } from 'lucide-react';
 
 export const Expenses = () => {
@@ -14,6 +16,7 @@ export const Expenses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const { showNotification } = useApp();
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value || undefined }));
@@ -37,9 +40,10 @@ export const Expenses = () => {
     if (window.confirm('Are you sure you want to delete this expense?')) {
       try {
         await expenseService.deleteExpense(id);
+        showNotification('Expense deleted successfully', 'success');
         refreshExpenses();
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete expense');
+        showNotification(err.response?.data?.message || 'Failed to delete expense', 'error');
       }
     }
   };
@@ -49,13 +53,15 @@ export const Expenses = () => {
       setActionLoading(true);
       if (selectedExpense) {
         await expenseService.updateExpense(selectedExpense.id, formData);
+        showNotification('Expense updated successfully', 'success');
       } else {
         await expenseService.createExpense(formData);
+        showNotification('Expense created successfully', 'success');
       }
       setIsModalOpen(false);
       refreshExpenses();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save expense');
+      showNotification(err.response?.data?.message || 'Failed to save expense', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -63,11 +69,15 @@ export const Expenses = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: '700' }}>Expenses</h1>
-        <Button onClick={handleCreateNew}>
-          <Plus size={18} /> Add Expense
-        </Button>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Expenses Ledger</h1>
+          <p className="page-subtitle">View, filter, and log transactions across dynamic categories.</p>
+        </div>
+        <button type="button" className="btn btn--primary" onClick={handleCreateNew}>
+          <Plus size={18} />
+          <span>Add Expense</span>
+        </button>
       </div>
 
       <ExpenseFilter
@@ -77,9 +87,9 @@ export const Expenses = () => {
       />
 
       {loading ? (
-        <div style={{ color: 'var(--color-text-muted)' }}>Loading expenses...</div>
+        <Loader text="Fetching transactions..." />
       ) : error ? (
-        <div style={{ color: 'var(--color-danger)' }}>{error}</div>
+        <ErrorMessage message={error} />
       ) : (
         <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} />
       )}
@@ -99,3 +109,5 @@ export const Expenses = () => {
     </div>
   );
 };
+
+export default Expenses;

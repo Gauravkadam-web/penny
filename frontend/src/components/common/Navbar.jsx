@@ -1,43 +1,31 @@
 import React from 'react';
-import { Wallet } from 'lucide-react';
+import { Wallet, Sun, Moon } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 export const Navbar = () => {
+  const { theme, toggleTheme } = useApp();
+
   return (
-    <header style={styles.header}>
-      <div style={styles.brand}>
-        <Wallet size={28} color="#6366f1" />
-        <span style={styles.title}>Penny</span>
-        <span style={styles.badge}>V1</span>
+    <header className="navbar">
+      <a href="/" className="navbar__brand">
+        <Wallet size={24} color="var(--color-ledger)" />
+        <span>Penny</span>
+        <span className="badge badge--success">V1</span>
+      </a>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? <Sun size={18} color="var(--color-gold)" /> : <Moon size={18} />}
+          <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+        </button>
       </div>
     </header>
   );
 };
 
-const styles = {
-  header: {
-    height: '64px',
-    backgroundColor: 'var(--color-card)',
-    borderBottom: '1px solid var(--color-card-border)',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 24px',
-  },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  title: {
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    letterSpacing: '-0.02em',
-  },
-  badge: {
-    backgroundColor: 'var(--color-primary-light)',
-    color: 'var(--color-primary-hover)',
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    padding: '2px 8px',
-    borderRadius: '12px',
-  },
-};
+export default Navbar;

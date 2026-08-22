@@ -2,14 +2,22 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar';
 import { Sidebar } from '../components/common/Sidebar';
+import { useApp } from '../context/AppContext';
 
 export const MainLayout = () => {
+  const { notification } = useApp();
+
   return (
-    <div style={styles.appContainer}>
-      <Navbar />
-      <div style={styles.body}>
-        <Sidebar />
-        <main style={styles.content}>
+    <div className="layout-container">
+      <Sidebar />
+      <div className="main-content">
+        <Navbar />
+        {notification && (
+          <div className={`toast toast--${notification.type}`} style={{ margin: 'var(--space-4) var(--space-5)' }}>
+            {notification.message}
+          </div>
+        )}
+        <main className="page-container">
           <Outlet />
         </main>
       </div>
@@ -17,19 +25,4 @@ export const MainLayout = () => {
   );
 };
 
-const styles = {
-  appContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100vh',
-  },
-  body: {
-    display: 'flex',
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    padding: '32px',
-    backgroundColor: 'var(--color-bg)',
-  },
-};
+export default MainLayout;

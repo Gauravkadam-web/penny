@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryList } from '../components/category/CategoryList';
 import { CategoryForm } from '../components/category/CategoryForm';
-import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import Loader from '../components/common/Loader';
+import ErrorMessage from '../components/common/ErrorMessage';
 import { categoryService } from '../services/categoryService';
+import { useApp } from '../context/AppContext';
 import { Plus } from 'lucide-react';
 
 export const Categories = () => {
@@ -12,6 +14,7 @@ export const Categories = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const { showNotification } = useApp();
 
   const handleCreateNew = () => {
     setSelectedCategory(null);
@@ -27,9 +30,10 @@ export const Categories = () => {
     if (window.confirm('Are you sure you want to delete/deactivate this category?')) {
       try {
         await categoryService.deleteCategory(id);
+        showNotification('Category updated/deactivated successfully', 'success');
         refreshCategories();
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete category');
+        showNotification(err.response?.data?.message || 'Failed to delete category', 'error');
       }
     }
   };
@@ -39,13 +43,15 @@ export const Categories = () => {
       setActionLoading(true);
       if (selectedCategory) {
         await categoryService.updateCategory(selectedCategory.id, formData);
+        showNotification('Category updated successfully', 'success');
       } else {
         await categoryService.createCategory(formData);
+        showNotification('Category created successfully', 'success');
       }
       setIsModalOpen(false);
       refreshCategories();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save category');
+      showNotification(err.response?.data?.message || 'Failed to save category', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -53,17 +59,21 @@ export const Categories = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: '700' }}>Category Management</h1>
-        <Button onClick={handleCreateNew}>
-          <Plus size={18} /> Add Category
-        </Button>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Category Management</h1>
+          <p className="page-subtitle">Manage user-defined dynamic categories and status safeguards.</p>
+        </div>
+        <button type="button" className="btn btn--primary" onClick={handleCreateNew}>
+          <Plus size={18} />
+          <span>Add Category</span>
+        </button>
       </div>
 
       {loading ? (
-        <div style={{ color: 'var(--color-text-muted)' }}>Loading categories...</div>
+        <Loader text="Fetching dynamic categories..." />
       ) : error ? (
-        <div style={{ color: 'var(--color-danger)' }}>{error}</div>
+        <ErrorMessage message={error} />
       ) : (
         <CategoryList categories={categories} onEdit={handleEdit} onDelete={handleDelete} />
       )}
@@ -83,3 +93,5 @@ export const Categories = () => {
     </div>
   );
 };
+
+export default Categories;

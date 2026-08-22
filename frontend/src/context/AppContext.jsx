@@ -1,9 +1,21 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [notification, setNotification] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('penny_theme') || 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('penny_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type });
@@ -11,7 +23,7 @@ export const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ notification, showNotification }}>
+    <AppContext.Provider value={{ notification, showNotification, theme, toggleTheme }}>
       {children}
     </AppContext.Provider>
   );
