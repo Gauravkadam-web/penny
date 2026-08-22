@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: penny_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-penny_db}
+      POSTGRES_USER: ${POSTGRES_USER:-penny_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-penny_secret_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-penny_user} -d ${POSTGRES_DB:-penny_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: penny_backend
+    ports:
+      - "${SPRING_PORT:-8080}:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-penny_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-penny_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-penny_secret_password}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: penny_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
