@@ -120,7 +120,11 @@ export const Dashboard = () => {
       </div>
 
       {/* 4 Metric Summary Cards */}
-      <SummaryCards summary={timeframe === 'all' ? summary : periodSummary} expenses={expenses} />
+      <SummaryCards
+        summary={periodSummary}
+        expenses={filteredExpenses}
+        timeframe={timeframe}
+      />
 
       {/* Category Spending Distribution */}
       <CategoryBreakdown expenses={filteredExpenses} />

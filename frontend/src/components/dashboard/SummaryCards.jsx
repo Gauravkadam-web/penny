@@ -2,31 +2,23 @@ import React from 'react';
 import { IndianRupee, Hash, TrendingUp, Award } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 
-export const SummaryCards = ({ summary = {}, expenses = [] }) => {
-  // Dynamically compute This Month's spending
+export const SummaryCards = ({ summary = {}, expenses = [], timeframe = 'all' }) => {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
 
-  let thisMonthSpend = 0;
-  let thisMonthCount = 0;
-  const categoryTotals = {};
+  // Dynamic calculations on the passed expenses array
+  const totalAmount = summary.totalAmount || 0;
+  const totalCount = summary.totalCount || 0;
 
+  // Calculate top category dynamically for the chosen timeframe
+  const categoryTotals = {};
   expenses.forEach((exp) => {
     const amount = Number(exp.amount) || 0;
     const catName = exp.categoryName || 'General';
     categoryTotals[catName] = (categoryTotals[catName] || 0) + amount;
-
-    if (exp.expenseDate) {
-      const expDate = new Date(exp.expenseDate);
-      if (expDate.getFullYear() === currentYear && expDate.getMonth() === currentMonth) {
-        thisMonthSpend += amount;
-        thisMonthCount += 1;
-      }
-    }
   });
 
-  // Dynamically identify Top Category
   let topCategoryName = 'None';
   let topCategoryAmount = 0;
   Object.entries(categoryTotals).forEach(([name, amt]) => {
@@ -36,24 +28,31 @@ export const SummaryCards = ({ summary = {}, expenses = [] }) => {
     }
   });
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  // Calculate average per transaction dynamically
+  const avgPerTxn = totalCount > 0 ? totalAmount / totalCount : 0;
+
+  // Subtext labels based on timeframe
+  const periodLabels = {
+    all: 'All-time records',
+    month: 'This month only',
+    '30days': 'Past 30 days',
+  };
 
   return (
     <div className="stats-grid">
-      {/* 1. Total Spend */}
+      {/* 1. Period Spend */}
       <div className="stat-card">
         <div className="stat-card__icon" style={{ backgroundColor: 'var(--color-ledger-light)', color: 'var(--color-ledger)' }}>
           <IndianRupee size={22} />
         </div>
         <div className="stat-card__content">
-          <p className="stat-card__label">Total Spend</p>
+          <p className="stat-card__label">
+            {timeframe === 'all' ? 'Total Spend' : timeframe === 'month' ? 'This Month Spend' : '30-Day Spend'}
+          </p>
           <h2 className="stat-card__value">
-            {formatCurrency(summary.totalAmount || 0)}
+            {formatCurrency(totalAmount)}
           </h2>
-          <p className="stat-card__subtext">Across all records</p>
+          <p className="stat-card__subtext">{periodLabels[timeframe] || 'Filtered period'}</p>
         </div>
       </div>
 
@@ -63,25 +62,25 @@ export const SummaryCards = ({ summary = {}, expenses = [] }) => {
           <Hash size={22} />
         </div>
         <div className="stat-card__content">
-          <p className="stat-card__label">Total Entries</p>
+          <p className="stat-card__label">Transactions</p>
           <h2 className="stat-card__value">
-            {summary.totalCount || 0}
+            {totalCount}
           </h2>
-          <p className="stat-card__subtext">Logged transactions</p>
+          <p className="stat-card__subtext">{totalCount === 1 ? '1 entry' : `${totalCount} entries logged`}</p>
         </div>
       </div>
 
-      {/* 3. This Month's Spend */}
+      {/* 3. Average Per Transaction */}
       <div className="stat-card">
         <div className="stat-card__icon" style={{ backgroundColor: 'rgba(37, 99, 235, 0.12)', color: '#2563EB' }}>
           <TrendingUp size={22} />
         </div>
         <div className="stat-card__content">
-          <p className="stat-card__label">{monthNames[currentMonth]}</p>
+          <p className="stat-card__label">Avg / Transaction</p>
           <h2 className="stat-card__value">
-            {formatCurrency(thisMonthSpend)}
+            {formatCurrency(avgPerTxn)}
           </h2>
-          <p className="stat-card__subtext">{thisMonthCount} entries this month</p>
+          <p className="stat-card__subtext">Average ticket size</p>
         </div>
       </div>
 
@@ -96,7 +95,7 @@ export const SummaryCards = ({ summary = {}, expenses = [] }) => {
             {topCategoryName}
           </h2>
           <p className="stat-card__subtext">
-            {topCategoryAmount > 0 ? formatCurrency(topCategoryAmount) : 'No spend yet'}
+            {topCategoryAmount > 0 ? `${formatCurrency(topCategoryAmount)} spend` : 'No transactions'}
           </p>
         </div>
       </div>
