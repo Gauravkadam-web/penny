@@ -19,6 +19,24 @@
   
   --color-rule: #D5D7D0;
 
+  /* Category Badge Palette (Light) */
+  --cat-emerald-bg: #E6F7F5;
+  --cat-emerald-text: #0F766E;
+  --cat-blue-bg: #EFF6FF;
+  --cat-blue-text: #1D4ED8;
+  --cat-purple-bg: #F5F3FF;
+  --cat-purple-text: #6D28D9;
+  --cat-amber-bg: #FEF3C7;
+  --cat-amber-text: #B45309;
+  --cat-rose-bg: #FFE4E6;
+  --cat-rose-text: #BE123C;
+  --cat-indigo-bg: #EEF2FF;
+  --cat-indigo-text: #4338CA;
+  --cat-cyan-bg: #ECFEFF;
+  --cat-cyan-text: #0E7490;
+  --cat-orange-bg: #FFF7ED;
+  --cat-orange-text: #C2410C;
+
   /* Typography */
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -88,6 +106,24 @@
   --color-rose-light: #4C0519;
   
   --color-rule: #2E3541;
+  
+  /* Category Badge Palette (Dark) */
+  --cat-emerald-bg: #064E3B;
+  --cat-emerald-text: #6EE7B7;
+  --cat-blue-bg: #1E3A8A;
+  --cat-blue-text: #93C5FD;
+  --cat-purple-bg: #4C1D95;
+  --cat-purple-text: #C4B5FD;
+  --cat-amber-bg: #78350F;
+  --cat-amber-text: #FDE68A;
+  --cat-rose-bg: #881337;
+  --cat-rose-text: #FDA4AF;
+  --cat-indigo-bg: #312E81;
+  --cat-indigo-text: #A5B4FC;
+  --cat-cyan-bg: #164E63;
+  --cat-cyan-text: #67E8F9;
+  --cat-orange-bg: #7C2D12;
+  --cat-orange-text: #FDBA74;
 
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
   --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.35);

@@ -41,11 +41,11 @@ export const Sidebar = () => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
+                `tabbar__link ${isActive ? 'tabbar__link--active' : ''}`
               }
             >
               <Icon size={20} />
-              <span className="sr-only">{item.label}</span>
+              <span>{item.label}</span>
             </NavLink>
           );
         })}

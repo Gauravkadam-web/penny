@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useCategories } from '../hooks/useCategories';
+import { useExpenses } from '../hooks/useExpenses';
 import { CategoryList } from '../components/category/CategoryList';
 import { CategoryForm } from '../components/category/CategoryForm';
 import { Modal } from '../components/common/Modal';
+import { ConfirmModal } from '../components/common/ConfirmModal';
 import Loader from '../components/common/Loader';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { categoryService } from '../services/categoryService';
@@ -11,10 +13,25 @@ import { Plus } from 'lucide-react';
 
 export const Categories = () => {
   const { categories, loading, error, refreshCategories } = useCategories(false);
+  const { expenses } = useExpenses();
+
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'inactive'
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Deletion modal state
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const { showNotification } = useApp();
+
+  const filteredCategories = useMemo(() => {
+    if (!categories) return [];
+    if (statusFilter === 'active') return categories.filter((c) => c.isActive);
+    if (statusFilter === 'inactive') return categories.filter((c) => !c.isActive);
+    return categories;
+  }, [categories, statusFilter]);
 
   const handleCreateNew = () => {
     setSelectedCategory(null);
@@ -26,15 +43,26 @@ export const Categories = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete/deactivate this category?')) {
-      try {
-        await categoryService.deleteCategory(id);
-        showNotification('Category updated/deactivated successfully', 'success');
-        refreshCategories();
-      } catch (err) {
-        showNotification(err.response?.data?.message || 'Failed to delete category', 'error');
-      }
+  const handleDeleteRequest = (category) => {
+    if (category.isSystemDefault) {
+      showNotification('System default categories are protected and cannot be deleted.', 'error');
+      return;
+    }
+    setDeleteTarget(category);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      setDeleteLoading(true);
+      await categoryService.deleteCategory(deleteTarget.id);
+      showNotification('Category deleted / deactivated successfully', 'success');
+      setDeleteTarget(null);
+      refreshCategories();
+    } catch (err) {
+      showNotification(err.response?.data?.message || 'Failed to delete category', 'error');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -62,12 +90,40 @@ export const Categories = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">Category Management</h1>
-          <p className="page-subtitle">Manage user-defined dynamic categories and status safeguards.</p>
+          <p className="page-subtitle">Manage dynamic user-defined categories and system safeguards.</p>
         </div>
-        <button type="button" className="btn btn--primary" onClick={handleCreateNew}>
-          <Plus size={18} />
-          <span>Add Category</span>
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+          {/* Status Filter Pills */}
+          <div className="filter-pills">
+            <button
+              type="button"
+              className={`filter-pill ${statusFilter === 'all' ? 'filter-pill--active' : ''}`}
+              onClick={() => setStatusFilter('all')}
+            >
+              All ({categories?.length || 0})
+            </button>
+            <button
+              type="button"
+              className={`filter-pill ${statusFilter === 'active' ? 'filter-pill--active' : ''}`}
+              onClick={() => setStatusFilter('active')}
+            >
+              Active ({categories?.filter((c) => c.isActive).length || 0})
+            </button>
+            <button
+              type="button"
+              className={`filter-pill ${statusFilter === 'inactive' ? 'filter-pill--active' : ''}`}
+              onClick={() => setStatusFilter('inactive')}
+            >
+              Inactive ({categories?.filter((c) => !c.isActive).length || 0})
+            </button>
+          </div>
+
+          <button type="button" className="btn btn--primary" onClick={handleCreateNew}>
+            <Plus size={18} />
+            <span>Add Category</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -75,9 +131,15 @@ export const Categories = () => {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : (
-        <CategoryList categories={categories} onEdit={handleEdit} onDelete={handleDelete} />
+        <CategoryList
+          categories={filteredCategories}
+          expenses={expenses}
+          onEdit={handleEdit}
+          onDeleteRequest={handleDeleteRequest}
+        />
       )}
 
+      {/* Add/Edit Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -90,6 +152,18 @@ export const Categories = () => {
           loading={actionLoading}
         />
       </Modal>
+
+      {/* Custom Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        title="Delete Category"
+        message={`Are you sure you want to delete or deactivate category "${deleteTarget?.name}"?`}
+        confirmText="Delete Category"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleteLoading}
+        variant="danger"
+      />
     </div>
   );
 };
